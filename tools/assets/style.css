@@ -273,6 +273,3 @@ p.note { color: var(--muted); font-size: 14px; }
 
 /* 목차 안의 code는 배경 없이 서체만 구분한다 */
 .toc code, .docnav code { background: none; padding: 0; font-size: 0.95em; }
-
-/* 원칙 문서와 저장소 규칙 문서를 목록에서 구분한다 */
-.docnav li.meta { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--rule-soft); }

@@ -31,8 +31,7 @@ SPINE = {
 
 SPINE_EXTRA = {"문서": "doclist", "적용 기준": "env"}
 
-# 원칙 문서와 달리 저장소 운영 규칙을 담는다. 읽는 순서(pager)에는 넣지 않는다.
-META_TITLES = {"AGENTS.md": "문서 작성 규칙"}
+REPO_BLOB = "https://github.com/hyunmuam/macbook-management/blob/main"
 
 DOC_TITLES = {
     "software-installation.md": "소프트웨어 설치 원칙",
@@ -67,7 +66,13 @@ def rewrite_href(url: str) -> str:
         return url
     path, _, anchor = url.partition("#")
     if path.endswith(".md"):
-        path = "index.html" if path == "README.md" else path[:-3] + ".html"
+        if path == "README.md":
+            path = "index.html"
+        elif path in DOC_TITLES:
+            path = path[:-3] + ".html"
+        else:
+            # AGENTS.md처럼 사이트에 싣지 않는 문서는 저장소 원본을 가리킨다
+            return f"{REPO_BLOB}/{url}"
     return path + ("#" + anchor if anchor else "")
 
 
@@ -359,13 +364,10 @@ def render_section(sec: Section) -> str:
     return f'<section class="s-{sec.role}" id="{sec.id}">{head}{inner_html}</section>'
 
 
-def doc_order(include_meta: bool = False) -> list:
-    entries = [("index.html", "저장소 개요", "README.md")] + [
+def doc_order() -> list:
+    return [("index.html", "저장소 개요", "README.md")] + [
         (name[:-3] + ".html", title, name) for name, title in DOC_TITLES.items()
     ]
-    if include_meta:
-        entries += [(n[:-3] + ".html", t, n) for n, t in META_TITLES.items()]
-    return entries
 
 
 def render_pager(current: str) -> str:
@@ -386,12 +388,11 @@ def render_pager(current: str) -> str:
 
 def render_doc_nav(current: str) -> str:
     """문서 간 이동은 허브를 거치지 않는다."""
-    entries = doc_order(include_meta=True)
+    entries = doc_order()
     items = []
     for href, title, src in entries:
         mark = ' class="cur" aria-current="page"' if src == current else ""
-        cls = ' class="meta"' if src in META_TITLES else ""
-        items.append(f'<li{cls}><a href="{href}"{mark}>{html.escape(title)}</a></li>')
+        items.append(f'<li><a href="{href}"{mark}>{html.escape(title)}</a></li>')
     items = "".join(items)
     return f'<nav class="docnav"><div class="toc-h">문서</div><ul>{items}</ul></nav>'
 
@@ -486,8 +487,7 @@ def render_doc(src: Path) -> str:
             ordered.append(sec)
 
     return PAGE.format(
-        kicker=("저장소 개요" if src.name == "README.md"
-                else "저장소 규칙" if src.name in META_TITLES else "원칙 문서"),
+        kicker="저장소 개요" if src.name == "README.md" else "원칙 문서",
         title=html.escape(title),
         source=src.name,
         docnav=render_doc_nav(src.name),
@@ -503,7 +503,7 @@ def main() -> int:
     root = Path(__file__).resolve().parent.parent
     repo = Path(sys.argv[1]) if len(sys.argv) > 1 else root
     out = Path(sys.argv[2]) if len(sys.argv) > 2 else root / "docs"
-    names = sys.argv[3:] or ["README.md"] + list(DOC_TITLES) + list(META_TITLES)
+    names = sys.argv[3:] or ["README.md"] + list(DOC_TITLES)
     out.mkdir(parents=True, exist_ok=True)
     (out / ".nojekyll").touch()  # Jekyll 전처리를 우회한다
     assets_src = Path(__file__).resolve().parent / "assets"
