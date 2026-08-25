@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Git과 GitHub SSH 설정 원칙 · macbook-management</title>
+<link rel="stylesheet" href="assets/style.css">
+</head><body>
+<a class="skip" href="#main">본문으로</a>
+<div class="shell">
+<aside class="side">
+  <a class="home" href="index.html">macbook-management</a>
+  <nav class="docnav"><div class="toc-h">문서</div><ul><li><a href="index.html">저장소 개요</a></li><li><a href="software-installation.html">소프트웨어 설치 원칙</a></li><li><a href="directory-management.html">디렉토리 관리 원칙</a></li><li><a href="development-environment.html">개발환경 구성 원칙</a></li><li><a href="shell-configuration.html">Shell 설정 원칙</a></li><li><a href="git-and-ssh.html" class="cur" aria-current="page">Git과 GitHub SSH 설정 원칙</a></li><li><a href="reinstallation.html">재설치 원칙</a></li></ul></nav>
+  <nav class="toc"><div class="toc-h">목차</div><ul><li><a class="l2" href="#1-문서-목적"><span class="n">1</span>문서 목적</a></li><li><a class="l2" href="#2-기본-환경"><span class="n">2</span>기본 환경</a></li><li><a class="l2" href="#3-전체-구성"><span class="n">3</span>전체 구성</a></li><li><a class="l2" href="#4-구성-원칙"><span class="n">4</span>구성 원칙</a><ul><li><a href="#41-github-인증에는-ssh를-사용한다">GitHub 인증에는 SSH를 사용한다</a></li><li><a href="#42-ed25519-key를-사용한다">Ed25519 key를 사용한다</a></li><li><a href="#43-passphrase와-별도-ssh-agent-설정을-사용하지-않는다">passphrase와 별도 SSH agent 설정을 사용하지 않는다</a></li><li><a href="#44-저장소에는-ssh-url을-사용한다">저장소에는 SSH URL을 사용한다</a></li><li><a href="#45-git-설치와-github-인증을-분리한다">Git 설치와 GitHub 인증을 분리한다</a></li><li><a href="#46-shell-설정을-변경하지-않는다">shell 설정을 변경하지 않는다</a></li><li><a href="#47-github-cli는-기본-구성에-포함하지-않는다">GitHub CLI는 기본 구성에 포함하지 않는다</a></li></ul></li><li><a class="l2" href="#5-설정-방법"><span class="n">5</span>설정 방법</a><ul><li><a href="#51-git과-ssh-상태-확인">Git과 SSH 상태 확인</a></li><li><a href="#52-기존-ssh-설정-확인">기존 SSH 설정 확인</a></li><li><a href="#53-git-사용자-정보-설정">Git 사용자 정보 설정</a></li><li><a href="#54-ssh-key-생성">SSH key 생성</a></li><li><a href="#55-ssh-config-구성">SSH config 구성</a></li><li><a href="#56-github에-public-key-등록">GitHub에 public key 등록</a></li><li><a href="#57-저장소-연결">저장소 연결</a></li></ul></li><li><a class="l2" href="#6-검증"><span class="n">6</span>검증</a><ul><li><a href="#61-git-설정">Git 설정</a></li><li><a href="#62-ssh-파일과-설정">SSH 파일과 설정</a></li><li><a href="#63-github-인증">GitHub 인증</a></li><li><a href="#64-저장소-remote">저장소 remote</a></li></ul></li><li><a class="l2" href="#7-이후-사용-및-유지보수"><span class="n">7</span>이후 사용 및 유지보수</a><ul><li><a href="#71-기본-git-작업">기본 Git 작업</a></li><li><a href="#72-ssh-key-관리">SSH key 관리</a></li><li><a href="#73-ssh-key-회전과-폐기">SSH key 회전과 폐기</a></li></ul></li><li><a class="l2" href="#8-현재-범위-밖의-항목"><span class="n">8</span>현재 범위 밖의 항목</a></li><li><a class="l2" href="#9-핵심-요약"><span class="n">9</span>핵심 요약</a></li></ul></nav>
+</aside>
+<main id="main">
+<header>
+  <div class="eyebrow">원칙 문서 · git-and-ssh.md</div>
+  <h1>Git과 GitHub SSH 설정 원칙</h1>
+  <p class="standfirst">macOS에서 Git을 사용하고 GitHub 저장소에 SSH로 접근할 때 필요한 기준과 설정 방법을 정리한다. 이 구성에서는 <code>git clone</code>, <code>git pull</code>, <code>git fetch</code>, <code>git push</code> 등의 작업을 안정적으로 수행한다.</p>
+</header>
+<div class="lifted"><section class="s-summary" id="9-핵심-요약"><h2><span class="n">9</span>핵심 요약</h2><div class="map"><pre>macOS
+│
+├── Git
+│   ├── user.name / user.email
+│   └── SSH 저장소 URL
+│
+└── OpenSSH
+    ├── ~/.ssh/config
+    └── ~/.ssh/&lt;ed25519-key&gt;
+              │
+              └── GitHub SSH authentication</pre></div>
+<details class="rules-fold"><summary>원칙 7개 목록</summary><ul><li><a href="#41-github-인증에는-ssh를-사용한다">GitHub 인증에는 SSH를 사용한다</a></li><li><a href="#42-ed25519-key를-사용한다">Ed25519 key를 사용한다</a></li><li><a href="#43-passphrase와-별도-ssh-agent-설정을-사용하지-않는다">passphrase와 별도 SSH agent 설정을 사용하지 않는다</a></li><li><a href="#44-저장소에는-ssh-url을-사용한다">저장소에는 SSH URL을 사용한다</a></li><li><a href="#45-git-설치와-github-인증을-분리한다">Git 설치와 GitHub 인증을 분리한다</a></li><li><a href="#46-shell-설정을-변경하지-않는다">shell 설정을 변경하지 않는다</a></li><li><a href="#47-github-cli는-기본-구성에-포함하지-않는다">GitHub CLI는 기본 구성에 포함하지 않는다</a></li></ul></details></section></div>
+<section class="s-purpose" id="1-문서-목적"><h2><span class="n">1</span>문서 목적</h2><p>macOS에서 Git을 사용하고 GitHub 저장소에 SSH로 접근할 때 필요한 기준과 설정 방법을 정리한다. 이 구성에서는 <code>git clone</code>, <code>git pull</code>, <code>git fetch</code>, <code>git push</code> 등의 작업을 안정적으로 수행한다.</p></section>
+<section class="s-env" id="2-기본-환경"><h2><span class="n">2</span>기본 환경</h2><dl class="specs"><div class="spec"><dt>운영체제</dt><dd>macOS</dd></div><div class="spec"><dt>GitHub 인증 방식</dt><dd>SSH</dd></div><div class="spec"><dt>SSH key algorithm</dt><dd>Ed25519</dd></div><div class="spec"><dt>SSH key 저장 경로</dt><dd><code>~/.ssh</code> 아래의 Ed25519 key (<code>~/.ssh/id_ed25519</code>는 기본값 예시)</dd></div><div class="spec"><dt>SSH key passphrase</dt><dd>사용하지 않음</dd></div><div class="spec"><dt>macOS Keychain의 SSH passphrase 저장</dt><dd>사용하지 않음</dd></div><div class="spec"><dt>Personal Access Token 관리</dt><dd>하지 않음</dd></div><div class="spec"><dt>별도 SSH agent 설정</dt><dd>하지 않음</dd></div></dl></section>
+<section class="s-structure" id="3-전체-구성"><h2><span class="n">3</span>전체 구성</h2><p>인증 흐름은 <code>Git</code> → <code>SSH</code> → <code>~/.ssh</code> 아래의 Ed25519 private key → <code>GitHub</code> 순서다.</p>
+<p>아래 트리와 파일 표는 <code>ssh-keygen</code>의 기본 파일명인 <code>id_ed25519</code>를 사용한 예시다.</p>
+<div class="map"><pre>~/
+├── .gitconfig
+└── .ssh/
+    ├── config
+    ├── id_ed25519
+    ├── id_ed25519.pub
+    └── known_hosts</pre></div>
+<div class="table-scroll"><table><thead><tr><th>파일</th><th>역할</th></tr></thead><tbody><tr><td data-label="파일"><code>~/.gitconfig</code></td><td data-label="역할">Git 전역 사용자 정보와 설정</td></tr><tr><td data-label="파일"><code>~/.ssh/config</code></td><td data-label="역할">GitHub에 접속할 때 적용할 SSH 설정</td></tr><tr><td data-label="파일"><code>~/.ssh/id_ed25519</code></td><td data-label="역할">SSH private key</td></tr><tr><td data-label="파일"><code>~/.ssh/id_ed25519.pub</code></td><td data-label="역할">GitHub에 등록할 SSH public key</td></tr><tr><td data-label="파일"><code>~/.ssh/known_hosts</code></td><td data-label="역할">접속한 SSH 서버의 host key 정보</td></tr></tbody></table></div></section>
+<section class="s-principles" id="4-구성-원칙"><h2><span class="n">4</span>구성 원칙</h2><article class="rule" id="41-github-인증에는-ssh를-사용한다"><div class="rule-n">4.1</div><div class="rule-b"><h3>GitHub 인증에는 SSH를 사용한다</h3><p>GitHub 저장소 접근에는 SSH를 기본 방식으로 사용한다.</p>
+<ul><li>Personal Access Token을 직접 관리하지 않는다.</li><li><code>git pull</code>과 <code>git push</code> 때마다 인증 정보를 입력하지 않는다.</li><li>인증에 사용할 key를 <code>~/.ssh/config</code>에 명시한다.</li><li>저장소 remote에는 SSH URL을 사용한다.</li></ul></div></article>
+<article class="rule" id="42-ed25519-key를-사용한다"><div class="rule-n">4.2</div><div class="rule-b"><h3>Ed25519 key를 사용한다</h3><p>SSH key는 Ed25519 algorithm으로 생성한다. private key는 이 Mac에만 보관하고 public key만 GitHub에 등록한다. 기본 파일명을 사용할 때 경로는 각각 <code>~/.ssh/id_ed25519</code>와 <code>~/.ssh/id_ed25519.pub</code>다.</p>
+<p>private key를 외부에 공개하거나 GitHub에 업로드해서는 안 된다.</p></div></article>
+<article class="rule" id="43-passphrase와-별도-ssh-agent-설정을-사용하지-않는다"><div class="rule-n">4.3</div><div class="rule-b"><h3>passphrase와 별도 SSH agent 설정을 사용하지 않는다</h3><p>이번 구성에서는 SSH key에 passphrase를 설정하지 않는다. SSH는 <code>~/.ssh/config</code>에 지정한 private key 파일을 직접 사용하므로 <code>UseKeychain yes</code>, <code>AddKeysToAgent yes</code>를 추가하거나 다음 명령을 실행하지 않는다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>ssh-add --apple-use-keychain ~/.ssh/id_ed25519</code></pre></div>
+<p>구성은 단순하다. 다만 private key 파일을 확보한 사람은 별도의 passphrase 없이 key를 사용할 수 있다. 파일 권한을 제한하고 private key를 외부에 공유하지 않는다.</p>
+<p>이 선택은 SSH key의 일반적인 보안 권장값이 아니다. 현재 개인 환경에서 관리 복잡도를 줄이기 위한 명시적인 예외다. 다음 조건이 생기면 passphrase, macOS Keychain 또는 별도 agent 사용을 다시 판단한다. 판단 결과를 이 문서의 기준에 먼저 반영한 뒤 새 key를 만든다.</p>
+<ul><li>Mac을 여러 사용자가 공유한다.</li><li>private key가 포함될 수 있는 home directory backup 또는 동기화를 사용한다.</li><li>기기 분실이나 local account 침해 위험에 대한 보호 수준을 높여야 한다.</li><li>조직 또는 프로젝트의 보안 정책이 passphrase나 hardware-backed key를 요구한다.</li></ul></div></article>
+<article class="rule" id="44-저장소에는-ssh-url을-사용한다"><div class="rule-n">4.4</div><div class="rule-b"><h3>저장소에는 SSH URL을 사용한다</h3><p>새 저장소를 clone하거나 remote를 설정할 때는 <code>git@github.com:&lt;owner&gt;/&lt;repository&gt;.git</code> 형태의 SSH URL을 사용한다.</p></div></article>
+<article class="rule" id="45-git-설치와-github-인증을-분리한다"><div class="rule-n">4.5</div><div class="rule-b"><h3>Git 설치와 GitHub 인증을 분리한다</h3><p>Git과 OpenSSH는 macOS 기본 도구를 사용한다. GitHub에 접근하려고 Homebrew Git을 추가로 설치하지 않는다. 일반적인 설치 판단 기준은 <a href="software-installation.html">소프트웨어 설치 원칙</a>에서 관리한다.</p>
+<p>최신 기능이나 특정 version이 필요해지면 설치 방식을 재검토한다.</p></div></article>
+<article class="rule" id="46-shell-설정을-변경하지-않는다"><div class="rule-n">4.6</div><div class="rule-b"><h3>shell 설정을 변경하지 않는다</h3><p>GitHub SSH 인증 설정은 <code>~/.ssh/config</code>에서 관리한다. <code>~/.zshrc</code>나 <code>~/.zprofile</code>은 수정하지 않는다. shell 설정의 책임과 파일별 역할은 <a href="shell-configuration.html">Shell 설정 원칙</a>을 따른다.</p></div></article>
+<article class="rule" id="47-github-cli는-기본-구성에-포함하지-않는다"><div class="rule-n">4.7</div><div class="rule-b"><h3>GitHub CLI는 기본 구성에 포함하지 않는다</h3><p>기본 구성은 <code>Git + SSH</code>로 유지한다. Pull Request나 Issue 등 GitHub 서비스 기능을 terminal에서 다룰 필요가 생기면 GitHub CLI 도입을 별도로 판단한다.</p></div></article></section>
+<section class="s-setup" id="5-설정-방법"><h2><span class="n">5</span>설정 방법</h2><div class="sub"><h3 id="51-git과-ssh-상태-확인"><span class="n">5.1</span>Git과 SSH 상태 확인</h3><div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>git --version
+command -v git
+ssh -V
+command -v ssh</code></pre></div>
+<p>명령마다 version 또는 실행 경로가 출력되어야 한다. Git 실행 시 Xcode Command Line Tools 설치 안내가 나타나면 안내에 따라 설치한다.</p></div>
+<div class="sub"><h3 id="52-기존-ssh-설정-확인"><span class="n">5.2</span>기존 SSH 설정 확인</h3><div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>ls -la ~/.ssh</code></pre></div>
+<p>초기화 직후에는 아래 메시지가 나타날 수 있다.</p>
+<p class="oneline"><code>ls: /Users/&lt;username&gt;/.ssh: No such file or directory</code></p>
+<p>초기화 직후 이 메시지가 나오는 것은 정상이다. 기존 <code>config</code>나 key가 있다면 덮어쓰기 전에 용도와 사용 중인 서비스를 확인한다.</p></div>
+<div class="sub"><h3 id="53-git-사용자-정보-설정"><span class="n">5.3</span>Git 사용자 정보 설정</h3><div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>git config --global user.name "&lt;your-name&gt;"
+git config --global user.email "&lt;your-email&gt;"</code></pre></div>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>git config --global user.name
+git config --global user.email
+git config --global --list</code></pre></div>
+<p>여기서 설정하는 이메일은 GitHub 인증 정보가 아니라 commit author 정보다. 이메일 공개를 원하지 않는다면 GitHub에서 제공하는 <code>noreply</code> 이메일을 사용할 수 있다.</p></div>
+<div class="sub"><h3 id="54-ssh-key-생성"><span class="n">5.4</span>SSH key 생성</h3><div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>ssh-keygen -t ed25519 -C "&lt;github-email&gt;"</code></pre></div>
+<p>저장 경로를 묻는 단계에서 기본 경로를 사용하려면 <code>Enter</code>를 누른다.</p>
+<p class="oneline"><code>Enter file in which to save the key (/Users/&lt;username&gt;/.ssh/id_ed25519):</code></p>
+<p>passphrase를 묻는 두 단계에서도 각각 <code>Enter</code>를 누른다.</p>
+<div class="map"><pre>Enter passphrase (empty for no passphrase):
+Enter same passphrase again:</pre></div>
+<p>같은 이름의 key가 이미 있다면 덮어쓰지 말고 기존 key의 용도를 먼저 확인한다. 생성 후 파일과 권한을 확인한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>ls -l ~/.ssh/id_ed25519 ~/.ssh/id_ed25519.pub</code></pre></div>
+<p>필요하면 권한을 맞춘다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_ed25519
+chmod 644 ~/.ssh/id_ed25519.pub</code></pre></div></div>
+<div class="sub"><h3 id="55-ssh-config-구성"><span class="n">5.5</span>SSH config 구성</h3><p>기존 파일이 없다면 생성하고 권한을 설정한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>touch ~/.ssh/config
+chmod 600 ~/.ssh/config</code></pre></div>
+<p><code>~/.ssh/config</code>를 선호하는 텍스트 편집기로 열고 다음 block을 추가한다. 기존 파일이 있다면 전체를 교체하지 않고 충돌 없이 추가한다. 다음 예시는 기본 파일명 <code>id_ed25519</code>를 사용한다. 별도 이름으로 생성한 key를 사용할 때는 <code>IdentityFile</code>을 실제 private key 경로로 맞춘다.</p>
+<div class="snip"><span class="lang">sshconfig</span><button class="copy" type="button" aria-label="설정 조각 복사">복사</button><pre><code>Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519
+  IdentitiesOnly yes</code></pre></div>
+<div class="table-scroll"><table><thead><tr><th>옵션</th><th>역할</th></tr></thead><tbody><tr><td data-label="옵션"><code>Host</code></td><td data-label="역할"><code>github.com</code> 접속에 이 block을 적용한다.</td></tr><tr><td data-label="옵션"><code>HostName</code></td><td data-label="역할">실제 접속할 서버 주소를 지정한다.</td></tr><tr><td data-label="옵션"><code>User</code></td><td data-label="역할">GitHub SSH 접속 사용자 <code>git</code>을 지정한다.</td></tr><tr><td data-label="옵션"><code>IdentityFile</code></td><td data-label="역할">인증에 사용할 private key를 지정한다.</td></tr><tr><td data-label="옵션"><code>IdentitiesOnly</code></td><td data-label="역할">지정한 <code>IdentityFile</code>만 사용하게 한다.</td></tr></tbody></table></div>
+<p>GitHub 계정은 SSH public key로 식별되므로 <code>User</code>에는 GitHub 사용자명이 아니라 <code>git</code>을 사용한다.</p></div>
+<div class="sub"><h3 id="56-github에-public-key-등록"><span class="n">5.6</span>GitHub에 public key 등록</h3><p>public key를 macOS clipboard에 복사한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>pbcopy &lt; ~/.ssh/id_ed25519.pub</code></pre></div>
+<p>출력이 없는 것이 정상이다. 직접 확인하려면 다음 명령을 사용한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>cat ~/.ssh/id_ed25519.pub</code></pre></div>
+<p>public key는 <code>ssh-ed25519 AAAA... &lt;github-email&gt;</code> 형태다.</p>
+<p>GitHub의 <code>Settings</code> → <code>SSH and GPG keys</code> → <code>New SSH key</code>로 이동해 다음 값을 입력한다.</p>
+<ul><li>Title: key의 용도를 식별하는 이름</li><li>Key type: <code>Authentication Key</code></li><li>Key: <code>id_ed25519.pub</code> 내용</li></ul>
+<p>GitHub에는 public key만 등록한다.</p>
+<p>public key를 등록한 뒤 다음 명령을 실행한다. 상세 확인 절차는 <a href="#63-github-인증">GitHub 인증 검증</a>을 따른다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>ssh -T git@github.com</code></pre></div></div>
+<div class="sub"><h3 id="57-저장소-연결"><span class="n">5.7</span>저장소 연결</h3><p>새 repository는 SSH URL로 clone한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>git clone git@github.com:&lt;owner&gt;/&lt;repository&gt;.git
+cd &lt;repository&gt;
+git remote -v</code></pre></div>
+<p>기존 HTTPS remote를 변경하려고 repository를 다시 clone할 필요는 없다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>git remote -v
+git remote set-url origin git@github.com:&lt;owner&gt;/&lt;repository&gt;.git
+git remote -v</code></pre></div></div></section>
+<section class="s-verify" id="6-검증"><h2><span class="n">6</span>검증</h2><div class="sub"><h3 id="61-git-설정"><span class="n">6.1</span>Git 설정</h3><div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>git --version
+git config --global user.name
+git config --global user.email</code></pre></div>
+<p>다음을 확인한다.</p>
+<ul class="check"><li>Git이 실행된다.</li><li>의도한 사용자 정보가 출력된다.</li></ul>
+<p>Git이 실행되지 않으면 <a href="#51-git과-ssh-상태-확인">Git과 SSH 상태 확인</a>, 사용자 정보가 다르면 <a href="#53-git-사용자-정보-설정">Git 사용자 정보 설정</a> 절차를 따른다.</p></div>
+<div class="sub"><h3 id="62-ssh-파일과-설정"><span class="n">6.2</span>SSH 파일과 설정</h3><div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>ls -la ~/.ssh
+cat ~/.ssh/config</code></pre></div>
+<p>다음을 확인한다.</p>
+<ul class="check"><li><code>~/.ssh/config</code>의 <code>IdentityFile</code>이 가리키는 Ed25519 private key와 대응하는 public key가 존재한다.</li><li><code>~/.ssh/config</code>에 <code>Host github.com</code> block이 존재한다.</li><li>첫 연결을 승인한 뒤 <code>~/.ssh/known_hosts</code>가 존재한다.</li><li>private key와 <code>config</code>의 권한이 각각 <code>600</code>이다.</li></ul>
+<p>key, <code>config</code> 또는 권한이 기준과 다르면 <a href="#5-설정-방법">설정 방법</a>의 SSH key 생성과 config 구성 절차를 따른다.</p></div>
+<div class="sub"><h3 id="63-github-인증"><span class="n">6.3</span>GitHub 인증</h3><div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>ssh -T git@github.com</code></pre></div>
+<p>처음 접속하면 host authenticity 확인 메시지가 나타날 수 있다.</p>
+<div class="map"><pre>The authenticity of host 'github.com (...)' can't be established.
+ED25519 key fingerprint is ...
+Are you sure you want to continue connecting (yes/no/[fingerprint])?</pre></div>
+<p>표시된 fingerprint가 <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints">GitHub가 공개한 SSH host key fingerprint</a>와 일치하는지 확인한 뒤 <code>yes</code>를 입력한다. 확인 없이 승인하지 않는다.</p>
+<p>인증에 성공하면 다음과 비슷한 메시지가 나타난다.</p>
+<p class="oneline"><code>Hi &lt;github-username&gt;! You've successfully authenticated, but GitHub does not provide shell access.</code></p>
+<p>GitHub는 shell access를 제공하지 않으므로 다음을 확인한다.</p>
+<ul class="check"><li>위와 비슷한 성공 메시지가 나타난다.</li><li>의도한 <code>&lt;github-username&gt;</code>이 나타난다.</li></ul>
+<p>두 항목이 나타나면 인증에 성공했다. 이 명령은 성공 메시지를 출력해도 종료 상태 <code>1</code>을 반환할 수 있다.</p></div>
+<div class="sub"><h3 id="64-저장소-remote"><span class="n">6.4</span>저장소 remote</h3><p>저장소 안에서 다음 명령을 실행한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>git remote -v</code></pre></div>
+<p>fetch와 push URL이 <code>git@github.com:&lt;owner&gt;/&lt;repository&gt;.git</code> 형태인지 확인한다.</p>
+<p>remote URL이 기준과 다르면 <a href="#57-저장소-연결">저장소 연결</a> 절차를 따른다.</p></div></section>
+<section class="s-maintain" id="7-이후-사용-및-유지보수"><h2><span class="n">7</span>이후 사용 및 유지보수</h2><div class="sub"><h3 id="71-기본-git-작업"><span class="n">7.1</span>기본 Git 작업</h3><p>SSH 설정을 마치면 다음 명령에는 별도의 GitHub 로그인이 필요하지 않다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>git pull
+git fetch
+git push</code></pre></div>
+<p>새 repository에는 SSH URL을 사용하고 <code>git remote -v</code>로 remote가 의도한 주소를 가리키는지 확인한다.</p></div>
+<div class="sub"><h3 id="72-ssh-key-관리"><span class="n">7.2</span>SSH key 관리</h3><ul><li>private key와 public key의 보관·등록 기준은 <a href="#42-ed25519-key를-사용한다">Ed25519 key 사용 원칙</a>을 따른다.</li><li>key 파일이나 <code>~/.ssh/config</code>를 변경한 뒤에는 <a href="#63-github-인증">GitHub 인증 검증</a>을 다시 수행한다.</li><li>새로운 key를 만들기 전에 기존 key의 용도와 등록 상태를 확인한다.</li></ul></div>
+<div class="sub"><h3 id="73-ssh-key-회전과-폐기"><span class="n">7.3</span>SSH key 회전과 폐기</h3><p>기존 key를 교체할 때는 다음 순서를 지킨다.</p>
+<ol><li>새 key 생성</li></ol>
+<p>- 기존 key를 덮어쓰지 않도록 <code>ssh-keygen -t ed25519 -C "&lt;github-email&gt;"</code>을 실행하고 저장 경로에 별도의 <code>&lt;new-key-name&gt;</code>을 지정한다. - 새 private key는 <code>600</code>, public key는 <code>644</code> 권한으로 맞춘다.</p>
+<ol><li>GitHub 등록 교체</li></ol>
+<p>- 새 public key를 GitHub의 <code>SSH and GPG keys</code>에 <code>Authentication Key</code>로 등록한다. - <code>~/.ssh/config</code>의 <code>IdentityFile</code>을 <code>~/.ssh/&lt;new-key-name&gt;</code>으로 변경한다. - <code>ssh -T git@github.com</code>으로 새 key가 동작하는지 확인한다.</p>
+<ol><li>기존 key 폐기</li></ol>
+<p>- 기존 key가 다른 서비스나 자동화에서 사용되지 않는지 확인한다. - GitHub의 <code>SSH and GPG keys</code>에서 기존 public key를 삭제한다. - 로컬의 기존 private key와 public key 파일을 삭제한다. 삭제한 credential은 복구할 수 없으므로 정확한 파일을 확인한 뒤 처리한다.</p>
+<ol><li>재검증</li></ol>
+<p>- <a href="#63-github-인증">GitHub 인증 검증</a>과 <a href="#64-저장소-remote">저장소 remote 검증</a>을 다시 수행한다.</p></div></section>
+<section class="s-scope" id="8-현재-범위-밖의-항목"><h2><span class="n">8</span>현재 범위 밖의 항목</h2><details><summary>이 문서가 다루지 않는 것 펼치기</summary><ul class="scope"><li><b>다계정(work/personal) SSH 구성</b><span>현재 기준은 하나의 GitHub 계정과 <code>Host github.com</code> 하나만 사용하므로 다루지 않는다.</span></li><li><b>commit signing</b><span>저장소 접근 인증과 commit 서명은 책임이 다르므로 현재 SSH 인증 범위에 포함하지 않는다.</span></li><li><b>HTTPS + PAT</b><span>SSH를 기본 접근 방식으로 정했으므로 token 발급과 보관 절차를 다루지 않는다.</span></li><li><b>GitHub CLI 인증</b><span>기본 Git 작업에는 <code>Git + SSH</code>로 충분하므로 <code>gh auth</code> 구성은 필요가 생길 때 별도로 다룬다.</span></li></ul></details></section>
+<nav class="pager"><a class="pg prev" href="shell-configuration.html"><span>이전</span>Shell 설정 원칙</a><a class="pg next" href="reinstallation.html"><span>다음</span>재설치 원칙</a></nav>
+<footer>
+  이 페이지는 <code>git-and-ssh.md</code>에서 생성되었다. 직접 수정하지 않는다.<br>
+  내용을 바꿀 때는 마크다운 원본을 고치고 <code>tools/render.py</code>를 다시 실행한다.
+</footer>
+</main>
+</div>
+<script src="assets/page.js"></script>
+</body></html>

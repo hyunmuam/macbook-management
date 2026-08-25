@@ -1,0 +1,275 @@
+:root {
+  --bg: #FBFBFD; --surface: #FFFFFF; --sunk: #F3F4F8;
+  --ink: #16171D; --muted: #6B6F7B; --faint: #9AA0AC;
+  --rule: #E2E4EA; --rule-soft: #EDEFF3;
+  --accent: #2D4A8A; --accent-soft: #EAEEF7;
+  --signal: #B4531A; --signal-soft: #FBF0E7;
+  --ok: #2F6B4F; --ok-soft: #E8F2EC;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101116; --surface: #16181F; --sunk: #1B1D25;
+    --ink: #E8E9ED; --muted: #8B8F9C; --faint: #666B77;
+    --rule: #26282F; --rule-soft: #1D1F26;
+    --accent: #7A9BE0; --accent-soft: #1A2233;
+    --signal: #E08A4A; --signal-soft: #2A1F16;
+    --ok: #6FBF95; --ok-soft: #142218;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--sans);
+  font-size: 16px; line-height: 1.75; margin: 0;
+  -webkit-font-smoothing: antialiased;
+  /* 한글은 어절 단위로 끊는다. 넘치는 영문·경로만 예외로 쪼갠다. */
+  word-break: keep-all; overflow-wrap: break-word;
+}
+pre { word-break: normal; overflow-wrap: normal; }
+p code, li code, td code, dd code, h3 code, h4 code { overflow-wrap: anywhere; }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+code { font-family: var(--mono); font-size: 0.86em; }
+p code, li code, td code, dd code {
+  background: var(--sunk); padding: 1px 5px; border-radius: 3px;
+}
+.skip { position: absolute; left: -9999px; }
+.skip:focus { left: 12px; top: 12px; background: var(--surface); padding: 8px 12px; z-index: 10; }
+
+/* ---------------------------------------------------------------- 레이아웃 */
+.shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 52px;
+         max-width: 1030px; margin: 0 auto; padding: 0 28px; }
+main { min-width: 0; max-width: 700px; padding-bottom: 120px; }
+
+/* -------------------------------------------------------------------- 목차 */
+.side { position: sticky; top: 0; align-self: start; height: 100vh;
+        display: flex; flex-direction: column; padding: 28px 0 24px; }
+.home { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+        color: var(--muted); text-decoration: none; padding-bottom: 20px;
+        border-bottom: 1px solid var(--rule); margin-bottom: 18px; }
+.home:hover { color: var(--accent); }
+.docnav { flex: none; padding-bottom: 18px; margin-bottom: 16px;
+          border-bottom: 1px solid var(--rule); }
+.docnav ul { list-style: none; margin: 0; padding: 0; }
+.docnav a { display: block; text-decoration: none; color: var(--muted);
+            font-size: 13px; line-height: 1.45; padding: 4px 10px;
+            border-left: 2px solid transparent; border-radius: 0 3px 3px 0; }
+.docnav a:hover { color: var(--ink); background: var(--sunk); }
+.docnav a.cur { color: var(--ink); font-weight: 620;
+                border-left-color: var(--ink); background: var(--sunk); }
+.toc { overflow-y: auto; padding-right: 8px; }
+.toc-h { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+         text-transform: uppercase; color: var(--faint); margin-bottom: 10px; }
+.toc ul { list-style: none; margin: 0; padding: 0; }
+.toc > ul > li { margin-bottom: 2px; }
+.toc a { display: block; text-decoration: none; color: var(--muted);
+         font-size: 13px; line-height: 1.45; padding: 4px 10px;
+         border-left: 2px solid transparent; border-radius: 0 3px 3px 0; }
+.toc a:hover { color: var(--ink); background: var(--sunk); }
+.toc a.l2 { color: var(--ink); font-weight: 560; }
+.toc a .n { font-family: var(--mono); font-size: 11px; color: var(--faint);
+            margin-right: 7px; font-variant-numeric: tabular-nums; }
+.toc ul ul { margin: 1px 0 6px; }
+.toc > ul > li > ul { display: none; }
+.toc > ul > li.open > ul { display: block; }
+.toc ul ul a { padding-left: 26px; color: var(--faint); }
+.toc ul ul ul a { padding-left: 38px; }
+.toc ul ul ul { margin: 0 0 4px; }
+.toc a.here { color: var(--accent); border-left-color: var(--accent);
+              background: var(--accent-soft); }
+.toc a.here .n { color: var(--accent); }
+
+/* ------------------------------------------------------------------ 머리말 */
+header { padding: 76px 0 30px; border-bottom: 2px solid var(--ink);
+         display: flex; flex-direction: column; gap: 13px; }
+.eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+           text-transform: uppercase; color: var(--muted); }
+h1 { font-size: clamp(28px, 5vw, 40px); font-weight: 700;
+     letter-spacing: -0.032em; line-height: 1.2; margin: 0; text-wrap: balance; }
+.standfirst { font-size: 17px; color: var(--muted); max-width: 60ch; margin: 0; }
+
+/* -------------------------------------------------------------------- 본문 */
+section { padding-top: 56px; scroll-margin-top: 20px; }
+section > .eyebrow { color: var(--faint); margin-bottom: 4px; }
+h2 { font-size: 26px; font-weight: 660; letter-spacing: -0.022em;
+     margin: 0 0 18px; text-wrap: balance; }
+h2 .n, h3 .n { font-family: var(--mono); color: var(--faint);
+               font-variant-numeric: tabular-nums; font-weight: 500; }
+h2 .n { font-size: 15px; margin-right: 11px; }
+h3 { font-size: 17px; font-weight: 640; margin: 0 0 8px; letter-spacing: -0.012em; }
+h3 .n { font-size: 13px; margin-right: 9px; color: var(--accent); }
+.sub { padding-top: 26px; }
+.sub h3 { scroll-margin-top: 20px; }
+p { margin: 0 0 14px; }
+ul, ol { margin: 0 0 14px; padding-left: 22px; }
+li { margin-bottom: 5px; }
+li::marker { color: var(--faint); }
+
+/* --------------------------------------------------------- 기본 환경: 카드 */
+.specs { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+         gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+         border-radius: 4px; overflow: hidden; margin: 0 0 16px; }
+.spec { background: var(--surface); padding: 13px 16px; }
+.spec dt { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+           text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.spec dd { margin: 0; font-size: 15px; line-height: 1.5; }
+.spec dd code { background: none; padding: 0; color: var(--accent); font-size: 13px; }
+
+/* ------------------------------------------------------------------ 코드블록 */
+.map { background: var(--surface); border: 1px solid var(--rule);
+       border-radius: 4px; overflow-x: auto; margin: 0 0 16px; }
+.map pre { font-family: var(--mono); font-size: 13px; line-height: 1.9;
+           margin: 0; padding: 18px; white-space: pre; }
+.cmd, .snip { position: relative; background: var(--sunk);
+       border: 1px solid var(--rule); border-radius: 4px; margin: 0 0 16px; }
+.snip { background: var(--surface); border-left: 3px solid var(--accent); }
+.lang { position: absolute; left: 14px; top: 9px;
+        font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+        color: var(--faint); text-transform: uppercase; }
+.snip .lang { left: 15px; color: var(--accent); }
+.cmd pre, .snip pre { font-family: var(--mono); font-size: 13px; line-height: 1.75;
+           margin: 0; padding: 30px 16px 16px; overflow-x: auto; }
+/* 한 줄짜리 출력·패턴은 박스 대신 축약 표기 */
+p.oneline { margin: -2px 0 16px; }
+p.oneline code { font-size: 13px; background: var(--sunk); color: var(--ink);
+                 border: 1px solid var(--rule-soft); border-radius: 3px;
+                 padding: 4px 10px; display: inline-block; }
+.copy { position: absolute; right: 8px; top: 6px; font-family: var(--mono);
+        font-size: 11px; color: var(--muted); background: var(--surface);
+        border: 1px solid var(--rule); border-radius: 3px; padding: 3px 9px;
+        cursor: pointer; opacity: 0; transition: opacity .12s; }
+.cmd:hover .copy, .snip:hover .copy, .copy:focus { opacity: 1; }
+.copy.done { color: var(--ok); border-color: var(--ok); }
+@media (hover: none) { .copy { opacity: 1; } }
+
+/* ---------------------------------------------------------------------- 표 */
+.table-scroll { overflow-x: auto; border: 1px solid var(--rule);
+                border-radius: 4px; margin: 0 0 16px; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; min-width: 460px; }
+thead th { text-align: left; font-family: var(--mono); font-size: 11px;
+           letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+           font-weight: 600; padding: 11px 15px; background: var(--rule-soft);
+           border-bottom: 1px solid var(--rule); white-space: nowrap; }
+tbody td { padding: 10px 15px; border-bottom: 1px solid var(--rule-soft);
+           vertical-align: baseline; }
+tbody tr:last-child td { border-bottom: none; }
+tbody td:first-child code { color: var(--accent); }
+
+/* ------------------------------------------------------------- 구성 원칙 */
+.s-principles .rule { display: grid; grid-template-columns: 52px minmax(0, 1fr);
+  gap: 16px; padding: 22px 0; border-bottom: 1px solid var(--rule-soft);
+  scroll-margin-top: 20px; }
+.s-principles .rule:last-child { border-bottom: none; }
+.rule-n { font-family: var(--mono); font-size: 13px; color: var(--accent);
+          font-variant-numeric: tabular-nums; font-weight: 600; padding-top: 3px; }
+.rule-b > :last-child { margin-bottom: 0; }
+.rule-b p, .rule-b ul, .rule-b ol { color: var(--muted); }
+
+/* ---------------------------------------------------------------- 검증 */
+ul.check { list-style: none; padding-left: 0; }
+ul.check li { position: relative; padding-left: 26px; }
+ul.check li::before { content: ""; position: absolute; left: 3px; top: 9px;
+                      width: 11px; height: 11px; border: 1.5px solid var(--faint);
+                      border-radius: 2px; }
+
+/* ----------------------------------------------------------- 범위 밖 항목 */
+.s-scope details { background: var(--surface); border: 1px solid var(--rule);
+                   border-radius: 4px; padding: 0 20px; }
+details > summary { cursor: pointer; padding: 14px 0; list-style: none;
+                    font-size: 14px; color: var(--muted); }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before { content: "▸ "; color: var(--faint); }
+details[open] > summary::before { content: "▾ "; }
+details[open] > summary { border-bottom: 1px solid var(--rule-soft); margin-bottom: 14px; }
+ul.scope { list-style: none; padding: 0 0 16px; max-width: none; }
+ul.scope li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+              gap: 18px; padding: 9px 0; border-bottom: 1px solid var(--rule-soft); }
+ul.scope li:last-child { border-bottom: none; }
+ul.scope b { font-weight: 600; font-size: 15px; }
+ul.scope span { color: var(--muted); font-size: 14px; }
+
+/* ------------------------------------------------------- 끌어올린 핵심 요약 */
+.lifted { padding-top: 40px; }
+.lifted section { padding-top: 0; background: var(--surface);
+                  border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+                  border-radius: 4px; padding: 22px 24px 8px; }
+.lifted h2 { margin-bottom: 14px; }
+.lifted h2 .n { display: none; }
+.lifted .map { background: var(--sunk); border-color: var(--rule-soft); }
+.lifted .rules-fold { margin-top: 4px; }
+.lifted ul { columns: 2; column-gap: 32px;
+             list-style: none; padding: 0; font-size: 14px; }
+.lifted ul li { break-inside: avoid; margin-bottom: 6px; }
+.lifted ul li a { text-decoration: none; }
+.lifted ul li a:hover { text-decoration: underline; }
+
+.pager { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+         gap: 12px; margin-top: 72px; }
+.pg { display: flex; flex-direction: column; gap: 3px; text-decoration: none;
+      border: 1px solid var(--rule); border-radius: 4px; padding: 14px 16px;
+      color: var(--ink); font-size: 15px; font-weight: 620;
+      transition: border-color .12s; }
+.pg:hover { border-color: var(--accent); }
+.pg span { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+           text-transform: uppercase; color: var(--faint); font-weight: 400; }
+.pg.next { text-align: right; }
+
+footer { margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--rule);
+         color: var(--faint); font-size: 11px; font-family: var(--mono);
+         line-height: 1.9; }
+
+/* ------------------------------------------------------------------ 반응형 */
+/* 18: 좁은 화면에서 표는 가로 스크롤 대신 행 단위 카드로 접는다 */
+@media (max-width: 640px) {
+  .table-scroll { border: none; border-radius: 0; overflow-x: visible; }
+  table { min-width: 0; }
+  thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  tbody tr { display: block; border: 1px solid var(--rule); border-radius: 4px;
+             padding: 12px 15px; margin-bottom: 10px; background: var(--surface); }
+  tbody tr:last-child { margin-bottom: 0; }
+  tbody td { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 12px;
+             border: none; padding: 4px 0; }
+  tbody td::before { content: attr(data-label); font-family: var(--mono); font-size: 11px;
+                     letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+                     padding-top: 4px; }
+  tbody td:empty { display: none; }
+}
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0 20px; }
+  .side { position: static; height: auto; border-bottom: 1px solid var(--rule);
+          padding-bottom: 16px; }
+  .toc { max-height: 240px; }
+  .home { padding-bottom: 14px; margin-bottom: 12px; }
+  header { padding-top: 40px; }
+  ul.scope li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .lifted ul { columns: 1; }
+}
+@media print {
+  .side, .copy { display: none; }
+  .shell { display: block; max-width: none; }
+  .s-scope details { border: none; }
+}
+
+/* ------------------------------------------------------------ H4 소제목 */
+h4 { font-size: 15px; font-weight: 640; margin: 24px 0 7px;
+     scroll-margin-top: 20px; color: var(--ink); }
+h4 .n { font-family: var(--mono); font-size: 13px; color: var(--accent);
+        margin-right: 8px; font-variant-numeric: tabular-nums; }
+.rule-b h4 { margin-top: 16px; }
+
+/* -------------------------------------------------------- README 허브 카드 */
+.doc-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+             gap: 12px; margin: 0 0 16px; }
+.doc-card { display: flex; flex-direction: column; gap: 5px; text-decoration: none;
+            background: var(--surface); border: 1px solid var(--rule);
+            border-radius: 4px; padding: 16px 18px; transition: border-color .12s; }
+.doc-card:hover { border-color: var(--accent); }
+.doc-card b { font-size: 15px; font-weight: 640; color: var(--ink); }
+.doc-card span { font-size: 14px; color: var(--muted); line-height: 1.55; }
+
+/* 환경 전제 카드 뒤에 붙는 보조 설명 */
+p.note { color: var(--muted); font-size: 14px; }
+
+/* 목차 안의 code는 배경 없이 서체만 구분한다 */
+.toc code, .docnav code { background: none; padding: 0; font-size: 0.95em; }

@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>개발환경 구성 원칙 · macbook-management</title>
+<link rel="stylesheet" href="assets/style.css">
+</head><body>
+<a class="skip" href="#main">본문으로</a>
+<div class="shell">
+<aside class="side">
+  <a class="home" href="index.html">macbook-management</a>
+  <nav class="docnav"><div class="toc-h">문서</div><ul><li><a href="index.html">저장소 개요</a></li><li><a href="software-installation.html">소프트웨어 설치 원칙</a></li><li><a href="directory-management.html">디렉토리 관리 원칙</a></li><li><a href="development-environment.html" class="cur" aria-current="page">개발환경 구성 원칙</a></li><li><a href="shell-configuration.html">Shell 설정 원칙</a></li><li><a href="git-and-ssh.html">Git과 GitHub SSH 설정 원칙</a></li><li><a href="reinstallation.html">재설치 원칙</a></li></ul></nav>
+  <nav class="toc"><div class="toc-h">목차</div><ul><li><a class="l2" href="#1-문서-목적"><span class="n">1</span>문서 목적</a></li><li><a class="l2" href="#2-기본-환경"><span class="n">2</span>기본 환경</a></li><li><a class="l2" href="#3-전체-구성"><span class="n">3</span>전체 구성</a></li><li><a class="l2" href="#4-구성-원칙"><span class="n">4</span>구성 원칙</a><ul><li><a href="#41-관리-대상마다-관리-주체를-하나만-둔다">관리 대상마다 관리 주체를 하나만 둔다</a></li><li><a href="#42-프로젝트-선언을-전역-기본값보다-우선한다">프로젝트 선언을 전역 기본값보다 우선한다</a></li><li><a href="#43-patch-version과-dependency는-프로젝트가-소유한다">patch version과 dependency는 프로젝트가 소유한다</a></li><li><a href="#44-전역-dependency를-최소화한다">전역 dependency를 최소화한다</a></li><li><a href="#45-제거와-재설치가-가능한-구성을-유지한다">제거와 재설치가 가능한 구성을 유지한다</a></li></ul></li><li><a class="l2" href="#5-설정-방법"><span class="n">5</span>설정 방법</a><ul><li><a href="#51-공통-cli와-설치-경계">공통 CLI와 설치 경계</a></li><li><a href="#52-java와-spring-boot">Java와 Spring Boot</a><ul><li><a href="#521-sdkman을-java의-단일-관리-주체로-사용한다">SDKMAN을 Java의 단일 관리 주체로 사용한다</a></li><li><a href="#522-temurin-25를-기본으로-하고-21을-호환용으로-유지한다">Temurin 25를 기본으로 하고 21을 호환용으로 유지한다</a></li><li><a href="#523-프로젝트는-sdkmanrc로-java-version을-선언한다">프로젝트는 <code>.sdkmanrc</code>로 Java version을 선언한다</a></li><li><a href="#524-gradle-wrapper만-사용한다">Gradle Wrapper만 사용한다</a></li></ul></li><li><a href="#53-nodejs와-react">Node.js와 React</a><ul><li><a href="#531-fnm을-nodejs의-단일-관리-주체로-사용한다">fnm을 Node.js의 단일 관리 주체로 사용한다</a></li><li><a href="#532-fnm은-interactive-zsh에서-초기화한다">fnm은 interactive Zsh에서 초기화한다</a></li><li><a href="#533-프로젝트는-node-version으로-nodejs-version을-선언한다">프로젝트는 <code>.node-version</code>으로 Node.js version을 선언한다</a></li><li><a href="#534-프로젝트마다-package-manager와-lockfile을-하나만-사용한다">프로젝트마다 package manager와 lockfile을 하나만 사용한다</a></li></ul></li><li><a href="#54-python">Python</a><ul><li><a href="#541-uv가-python과-프로젝트-환경을-관리한다">uv가 Python과 프로젝트 환경을 관리한다</a></li><li><a href="#542-프로젝트가-python-version과-dependency를-선언한다">프로젝트가 Python version과 dependency를 선언한다</a></li><li><a href="#543-uv-sync와-uv-run을-사용한다"><code>uv sync</code>와 <code>uv run</code>을 사용한다</a></li></ul></li><li><a href="#55-orbstack과-프로젝트-container">OrbStack과 프로젝트 container</a><ul><li><a href="#551-orbstack을-docker-runtime의-단일-관리-주체로-사용한다">OrbStack을 Docker runtime의 단일 관리 주체로 사용한다</a></li><li><a href="#552-docker-context와-cli-출처를-확인한다">Docker context와 CLI 출처를 확인한다</a></li><li><a href="#553-프로젝트-전용-service는-해당-저장소가-소유한다">프로젝트 전용 service는 해당 저장소가 소유한다</a></li><li><a href="#554-image-version과-프로젝트-data를-명시적으로-관리한다">image version과 프로젝트 data를 명시적으로 관리한다</a></li><li><a href="#555-프로젝트별로-실행하고-검증한다">프로젝트별로 실행하고 검증한다</a></li></ul></li><li><a href="#56-ide와-terminal-역할">IDE와 terminal 역할</a></li></ul></li><li><a class="l2" href="#6-검증"><span class="n">6</span>검증</a><ul><li><a href="#61-관리-도구">관리 도구</a></li><li><a href="#62-runtime">runtime</a></li><li><a href="#63-프로젝트-재현">프로젝트 재현</a></li></ul></li><li><a class="l2" href="#7-이후-사용-및-유지보수"><span class="n">7</span>이후 사용 및 유지보수</a><ul><li><a href="#71-기준-version-변경">기준 version 변경</a></li><li><a href="#72-patch-version-업데이트">patch version 업데이트</a></li><li><a href="#73-도구-제거">도구 제거</a></li></ul></li><li><a class="l2" href="#8-현재-범위-밖의-항목"><span class="n">8</span>현재 범위 밖의 항목</a></li><li><a class="l2" href="#9-핵심-요약"><span class="n">9</span>핵심 요약</a></li></ul></nav>
+</aside>
+<main id="main">
+<header>
+  <div class="eyebrow">원칙 문서 · development-environment.md</div>
+  <h1>개발환경 구성 원칙</h1>
+  <p class="standfirst">Apple Silicon Mac에서 Spring Boot를 주력으로 사용하고 React와 Python 프로젝트를 함께 개발할 때 필요한 runtime, build, dependency와 container 구성 기준을 기록한다.</p>
+</header>
+<div class="lifted"><section class="s-summary" id="9-핵심-요약"><h2><span class="n">9</span>핵심 요약</h2><div class="map"><pre>Java
+└── SDKMAN
+    ├── Temurin 25 LTS — 기본
+    ├── Temurin 21 LTS — 호환
+    └── 프로젝트: .sdkmanrc + Gradle Wrapper
+
+Node.js
+└── fnm
+    ├── Node.js 24 LTS — 기본
+    ├── Node.js 22 LTS — 호환
+    └── 프로젝트: .node-version + 하나의 lockfile
+
+Python
+└── uv
+    └── 프로젝트: .python-version + pyproject.toml + uv.lock
+
+container
+└── OrbStack
+    └── 프로젝트: compose.yaml + 명시적인 image version
+
+프로젝트 root
+└── ~/02-work/01-development</pre></div>
+<details class="rules-fold"><summary>원칙 5개 목록</summary><ul><li><a href="#41-관리-대상마다-관리-주체를-하나만-둔다">관리 대상마다 관리 주체를 하나만 둔다</a></li><li><a href="#42-프로젝트-선언을-전역-기본값보다-우선한다">프로젝트 선언을 전역 기본값보다 우선한다</a></li><li><a href="#43-patch-version과-dependency는-프로젝트가-소유한다">patch version과 dependency는 프로젝트가 소유한다</a></li><li><a href="#44-전역-dependency를-최소화한다">전역 dependency를 최소화한다</a></li><li><a href="#45-제거와-재설치가-가능한-구성을-유지한다">제거와 재설치가 가능한 구성을 유지한다</a></li></ul></details></section></div>
+<section class="s-purpose" id="1-문서-목적"><h2><span class="n">1</span>문서 목적</h2><p>Apple Silicon Mac에서 Spring Boot를 주력으로 사용하고 React와 Python 프로젝트를 함께 개발할 때 필요한 runtime, build, dependency와 container 구성 기준을 기록한다.</p>
+<p>모든 언어를 하나의 version manager로 통합하지 않는다. 각 생태계에 적합한 도구의 책임을 분리한다. 프로젝트가 선언한 version과 dependency를 기준으로 초기화한 Mac에서도 같은 개발환경을 다시 구성한다.</p>
+<p>관리 범위:</p>
+<ul><li>Java, Node.js와 Python runtime의 관리 주체</li><li>Mac에서 사용할 기준 major version과 프로젝트별 version 선언</li><li>Spring Boot의 Gradle Wrapper 사용 원칙</li><li>OrbStack과 Docker Compose를 이용한 로컬 service 구성</li><li>IntelliJ IDEA, VS Code와 Warp의 역할</li><li>개발환경의 검증과 version 변경 기준</li></ul>
+<p>일반적인 설치·업데이트·제거 방식은 <a href="software-installation.html">소프트웨어 설치 원칙</a>이 소유한다. <code>.zprofile</code>과 <code>.zshrc</code>의 책임은 <a href="shell-configuration.html">Shell 설정 원칙</a>, GitHub 연결은 <a href="git-and-ssh.html">Git과 GitHub SSH 설정 원칙</a>이 소유한다.</p></section>
+<section class="s-env" id="2-기본-환경"><h2><span class="n">2</span>기본 환경</h2><dl class="specs"><div class="spec"><dt>운영체제</dt><dd>macOS</dd></div><div class="spec"><dt>architecture</dt><dd>Apple Silicon (<code>arm64</code>)</dd></div><div class="spec"><dt>프로젝트 위치</dt><dd><code>~/02-work/01-development</code></dd></div><div class="spec"><dt>Java manager</dt><dd>SDKMAN</dd></div><div class="spec"><dt>Java distribution</dt><dd>Eclipse Temurin</dd></div><div class="spec"><dt>Java 기본</dt><dd>25 LTS</dd></div><div class="spec"><dt>Java 호환</dt><dd>21 LTS</dd></div><div class="spec"><dt>Spring build</dt><dd>프로젝트의 Gradle Wrapper</dd></div><div class="spec"><dt>Node.js manager</dt><dd>fnm</dd></div><div class="spec"><dt>Node.js 기본</dt><dd>24 LTS</dd></div><div class="spec"><dt>Node.js 호환</dt><dd>22 LTS</dd></div><div class="spec"><dt>Python manager</dt><dd>uv</dd></div><div class="spec"><dt>container runtime</dt><dd>OrbStack</dd></div><div class="spec"><dt>container 정의</dt><dd>프로젝트의 <code>compose.yaml</code></dd></div><div class="spec"><dt>Java IDE</dt><dd>IntelliJ IDEA</dd></div><div class="spec"><dt>React·Python editor</dt><dd>VS Code</dd></div><div class="spec"><dt>독립 terminal</dt><dd>Warp</dd></div></dl>
+<p class="note">이 표의 major version은 Mac을 새로 구성할 때 적용할 기준이다. 문서를 작성한 시점에 <a href="https://adoptium.net/support/">Eclipse Temurin 지원 일정</a>은 Java 25와 21을 LTS로, <a href="https://nodejs.org/en/about/previous-releases">Node.js release 목록</a>은 Node.js 24와 22를 LTS로 분류한다.</p>
+<p class="note">지원 상태는 바뀔 수 있으므로 실제 설치와 기준 변경 전에는 공식 문서를 다시 확인한다. patch version과 SDKMAN candidate 식별자는 이 문서에 고정하지 않는다.</p></section>
+<section class="s-structure" id="3-전체-구성"><h2><span class="n">3</span>전체 구성</h2><div class="map"><pre>macOS
+├── Homebrew
+│   ├── jq
+│   ├── ripgrep
+│   ├── fd
+│   ├── fnm
+│   └── uv
+├── SDKMAN
+│   ├── Eclipse Temurin 25 LTS
+│   └── Eclipse Temurin 21 LTS
+├── OrbStack
+│   ├── Docker Engine
+│   └── Docker CLI·Compose
+├── IntelliJ IDEA
+│   └── Spring Boot
+├── VS Code
+│   ├── React
+│   └── Python
+└── ~/02-work/01-development
+    └── 각 프로젝트
+        ├── runtime version 선언
+        ├── dependency lockfile
+        ├── build wrapper 또는 script
+        └── compose.yaml</pre></div>
+<p>shell 사용을 위한 <code>fzf</code>, Starship, Zoxide와 Zsh plugin은 <a href="shell-configuration.html">Shell 설정 원칙</a>이 소유한다. Git은 macOS 기본 Git을 사용하고 GitHub CLI는 기본 구성에 포함하지 않는다.</p></section>
+<section class="s-principles" id="4-구성-원칙"><h2><span class="n">4</span>구성 원칙</h2><article class="rule" id="41-관리-대상마다-관리-주체를-하나만-둔다"><div class="rule-n">4.1</div><div class="rule-b"><h3>관리 대상마다 관리 주체를 하나만 둔다</h3><p>같은 Java, Node.js, Python 또는 Docker CLI를 둘 이상의 도구로 중복 설치하지 않는다.</p>
+<ul><li>SDKMAN으로 관리하는 Java를 Homebrew formula로 다시 설치하지 않는다.</li><li>fnm으로 관리하는 Node.js를 Homebrew <code>node</code> formula로 다시 설치하지 않는다.</li><li>uv가 관리하는 Python을 사용하므로 pyenv를 추가하지 않는다.</li><li>OrbStack을 사용할 때 Docker Desktop과 Homebrew Docker CLI를 중복해서 두지 않는다.</li></ul>
+<p>설치 전에 <code>type -a &lt;command&gt;</code>로 같은 명령이 여러 경로에 있는지 확인한다.</p></div></article>
+<article class="rule" id="42-프로젝트-선언을-전역-기본값보다-우선한다"><div class="rule-n">4.2</div><div class="rule-b"><h3>프로젝트 선언을 전역 기본값보다 우선한다</h3><p>전역 기본 version은 version 선언이 없는 작업과 새 프로젝트의 시작점이다. 기존 프로젝트에 <code>.sdkmanrc</code>, <code>.node-version</code>, <code>.python-version</code> 또는 <code>pyproject.toml</code>의 Python 요구사항이 있으면 프로젝트 선언을 우선한다.</p>
+<p>프로젝트가 요구하는 version에 맞추더라도 Mac 전체의 기본 version을 반복해서 변경하지 않는다.</p></div></article>
+<article class="rule" id="43-patch-version과-dependency는-프로젝트가-소유한다"><div class="rule-n">4.3</div><div class="rule-b"><h3>patch version과 dependency는 프로젝트가 소유한다</h3><p>이 문서는 장기 기준이 되는 major version만 관리한다. 정확한 runtime version과 dependency는 다음 프로젝트 파일이 소유한다.</p>
+<div class="table-scroll"><table><thead><tr><th>생태계</th><th>프로젝트 파일</th></tr></thead><tbody><tr><td data-label="생태계">Java</td><td data-label="프로젝트 파일"><code>.sdkmanrc</code>, Gradle Wrapper 설정과 build 파일</td></tr><tr><td data-label="생태계">Node.js</td><td data-label="프로젝트 파일"><code>.node-version</code>, <code>package.json</code>, 하나의 lockfile</td></tr><tr><td data-label="생태계">Python</td><td data-label="프로젝트 파일"><code>.python-version</code>, <code>pyproject.toml</code>, <code>uv.lock</code></td></tr><tr><td data-label="생태계">container</td><td data-label="프로젝트 파일"><code>compose.yaml</code></td></tr></tbody></table></div>
+<p>현재 머신에 설치된 patch version을 이 문서에 실측값으로 기록하지 않는다.</p></div></article>
+<article class="rule" id="44-전역-dependency를-최소화한다"><div class="rule-n">4.4</div><div class="rule-b"><h3>전역 dependency를 최소화한다</h3><p>프로젝트에서 사용하는 library와 build tool은 프로젝트 안에서 선언한다. 전역 설치는 프로젝트와 독립적으로 반복해서 사용하는 CLI에만 허용한다. 개발사도 해당 설치 방식을 지원해야 한다.</p>
+<p>Spring Boot build에는 Gradle을 전역 설치하지 않는다. React dependency는 전역 <code>npm</code> package로 관리하지 않으며 Python 프로젝트 dependency도 system Python에 설치하지 않는다.</p></div></article>
+<article class="rule" id="45-제거와-재설치가-가능한-구성을-유지한다"><div class="rule-n">4.5</div><div class="rule-b"><h3>제거와 재설치가 가능한 구성을 유지한다</h3><p>runtime manager의 cache나 설치 디렉토리를 수동으로 삭제하는 방식으로 정리하지 않는다. 각 관리 도구가 제공하는 제거 명령과 <a href="software-installation.html">소프트웨어 설치 원칙</a>의 제거 기준을 따른다.</p>
+<p>프로젝트는 source와 version·dependency 선언만으로 <code>.venv</code>, <code>node_modules</code>와 build output을 다시 만들 수 있어야 한다.</p></div></article></section>
+<section class="s-setup" id="5-설정-방법"><h2><span class="n">5</span>설정 방법</h2><div class="sub"><h3 id="51-공통-cli와-설치-경계"><span class="n">5.1</span>공통 CLI와 설치 경계</h3><p>이 개발환경이 기준으로 선택하는 Homebrew formula는 다음과 같다.</p>
+<div class="table-scroll"><table><thead><tr><th>formula</th><th>역할</th></tr></thead><tbody><tr><td data-label="formula"><code>jq</code></td><td data-label="역할">JSON 조회와 변환</td></tr><tr><td data-label="formula"><code>ripgrep</code></td><td data-label="역할">Source와 text 검색</td></tr><tr><td data-label="formula"><code>fd</code></td><td data-label="역할">파일과 디렉토리 검색</td></tr><tr><td data-label="formula"><code>fnm</code></td><td data-label="역할">Node.js version 관리</td></tr><tr><td data-label="formula"><code>uv</code></td><td data-label="역할">Python과 Python 프로젝트 관리</td></tr></tbody></table></div>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>brew install jq ripgrep fd fnm uv</code></pre></div>
+<p>실행 전에 <a href="software-installation.html">소프트웨어 설치 원칙</a>의 중복 설치 확인과 Homebrew formula 기준을 적용한다. 실제 Brewfile과 현재 설치 목록은 이 저장소에서 관리하지 않는다.</p>
+<p>다음 상태를 확인한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>command -v jq
+command -v rg
+command -v fd
+command -v fnm
+command -v uv</code></pre></div>
+<p>각 command는 의도한 하나의 관리 주체에서 제공되어야 한다.</p></div>
+<div class="sub"><h3 id="52-java와-spring-boot"><span class="n">5.2</span>Java와 Spring Boot</h3><h4 id="521-sdkman을-java의-단일-관리-주체로-사용한다"><span class="n">5.2.1</span>SDKMAN을 Java의 단일 관리 주체로 사용한다</h4>
+<p>SDKMAN 설치는 Homebrew formula 대신 <a href="https://sdkman.io/install/">SDKMAN 공식 설치 절차</a>를 따른다. 공식 절차가 원격 installer script를 사용하므로 실행 전에 <a href="software-installation.html#410-검증되지-않은-설치-경로는-사용하지-않는다">소프트웨어 설치 원칙의 원격 script 기준</a>에 따라 공식 URL과 script 내용을 확인한다.</p>
+<p>SDKMAN installer가 shell 설정에 추가한 marker와 초기화 block은 직접 관리하는 설정과 구분한다. 구분 기준은 <a href="shell-configuration.html">Shell 설정 원칙</a>을 따른다. 다른 Mac의 SDKMAN 경로를 복사하지 않는다.</p>
+<p>설치 후 확인한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>sdk version
+sdk list java</code></pre></div>
+<h4 id="522-temurin-25를-기본으로-하고-21을-호환용으로-유지한다"><span class="n">5.2.2</span>Temurin 25를 기본으로 하고 21을 호환용으로 유지한다</h4>
+<p><code>sdk list java</code>에서 현재 제공되는 Temurin 25와 21의 정확한 candidate 식별자를 확인한 뒤 설치한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>sdk install java &lt;temurin-25-candidate&gt;
+sdk install java &lt;temurin-21-candidate&gt;
+sdk default java &lt;temurin-25-candidate&gt;</code></pre></div>
+<p><code>&lt;temurin-25-candidate&gt;</code>와 <code>&lt;temurin-21-candidate&gt;</code>에는 <code>sdk list java</code>가 현재 표시하는 값을 사용한다. 문서의 예전 patch version을 추측해 입력하지 않는다.</p>
+<p>현재 기본 version을 확인한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>sdk current java
+java --version</code></pre></div>
+<h4 id="523-프로젝트는-sdkmanrc로-java-version을-선언한다"><span class="n">5.2.3</span>프로젝트는 <code>.sdkmanrc</code>로 Java version을 선언한다</h4>
+<p>Spring Boot 프로젝트 root에서 현재 Java를 기준으로 <code>.sdkmanrc</code>를 만들 수 있다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>sdk env init</code></pre></div>
+<p>파일에는 프로젝트가 사용하는 정확한 SDKMAN candidate를 기록한다.</p>
+<p class="oneline"><code>java=&lt;project-temurin-candidate&gt;</code></p>
+<p>프로젝트 진입 후 version을 적용한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>sdk env</code></pre></div>
+<p>설치되지 않은 candidate라면 프로젝트 선언을 확인한 뒤 설치한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>sdk env install</code></pre></div>
+<p>프로젝트를 벗어나 기본 version으로 돌아갈 때는 다음 명령을 사용한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>sdk env clear</code></pre></div>
+<p>자동 전환이 실제로 필요해지기 전에는 <code>sdkman_auto_env=true</code>를 기본값으로 강제하지 않는다.</p>
+<h4 id="524-gradle-wrapper만-사용한다"><span class="n">5.2.4</span>Gradle Wrapper만 사용한다</h4>
+<p>Spring Boot 프로젝트는 다음 파일을 함께 version control에 포함한다.</p>
+<div class="map"><pre>spring-project/
+├── build.gradle 또는 build.gradle.kts
+├── gradlew
+├── gradlew.bat
+└── gradle/
+    └── wrapper/</pre></div>
+<p>Mac에 Gradle을 전역 설치하지 않는다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>brew install gradle</code></pre></div>
+<p>위 명령은 실행하지 않는다. 프로젝트 wrapper로 실행하고 build한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>./gradlew bootRun
+./gradlew build</code></pre></div>
+<p>Wrapper file이 없거나 실행 권한이 없으면 전역 Gradle로 우회하지 않고 프로젝트 설정을 먼저 복구한다.</p></div>
+<div class="sub"><h3 id="53-nodejs와-react"><span class="n">5.3</span>Node.js와 React</h3><h4 id="531-fnm을-nodejs의-단일-관리-주체로-사용한다"><span class="n">5.3.1</span>fnm을 Node.js의 단일 관리 주체로 사용한다</h4>
+<p>Homebrew로 fnm을 설치하고 Node.js 자체는 fnm으로 설치한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>fnm install 24
+fnm install 22
+fnm default 24</code></pre></div>
+<p>명령을 실행하면 해당 major에서 당시 지원하는 최신 patch version이 설치된다. 프로젝트가 더 정확한 version을 요구하면 <code>.node-version</code>에 그 값을 기록한다.</p>
+<h4 id="532-fnm은-interactive-zsh에서-초기화한다"><span class="n">5.3.2</span>fnm은 interactive Zsh에서 초기화한다</h4>
+<p><a href="https://github.com/Schniz/fnm#shell-setup">fnm 공식 Zsh 설정</a>에 따라 다음 block을 <code>~/.zshrc</code>에 둔다.</p>
+<div class="snip"><span class="lang">zsh</span><button class="copy" type="button" aria-label="설정 조각 복사">복사</button><pre><code>if command -v fnm &gt;/dev/null 2&gt;&amp;1; then
+  eval "$(fnm env --use-on-cd --shell zsh)"
+fi</code></pre></div>
+<p><code>--use-on-cd</code>는 <code>.node-version</code>이 있는 프로젝트에 진입할 때 version을 전환한다. block 위치와 문법 검증은 <a href="shell-configuration.html">Shell 설정 원칙</a>을 따른다.</p>
+<h4 id="533-프로젝트는-node-version으로-nodejs-version을-선언한다"><span class="n">5.3.3</span>프로젝트는 <code>.node-version</code>으로 Node.js version을 선언한다</h4>
+<p>새 React 프로젝트의 기본 형태는 다음과 같다.</p>
+<div class="map"><pre>frontend/
+├── package.json
+├── package-lock.json 또는 다른 하나의 lockfile
+└── .node-version</pre></div>
+<p>기본 major version만 요구하는 프로젝트는 다음처럼 기록할 수 있다.</p>
+<p class="oneline"><code>24</code></p>
+<p>정확한 patch version이 필요한 프로젝트는 전체 version을 기록한다. 프로젝트에 진입한 뒤 확인한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>fnm current
+node --version</code></pre></div>
+<h4 id="534-프로젝트마다-package-manager와-lockfile을-하나만-사용한다"><span class="n">5.3.4</span>프로젝트마다 package manager와 lockfile을 하나만 사용한다</h4>
+<p>프로젝트가 선택한 <code>npm</code>, <code>pnpm</code> 또는 <code>yarn</code> 중 하나를 사용한다. 다음 lockfile을 한 프로젝트에서 의도 없이 함께 관리하지 않는다.</p>
+<ul><li><code>package-lock.json</code></li><li><code>pnpm-lock.yaml</code></li><li><code>yarn.lock</code></li></ul>
+<p>dependency 설치와 build 명령은 프로젝트의 README와 <code>package.json</code> script를 따른다. MacBook 관리 문서가 모든 React 프로젝트에 하나의 package manager를 강제하지 않는다.</p></div>
+<div class="sub"><h3 id="54-python"><span class="n">5.4</span>Python</h3><h4 id="541-uv가-python과-프로젝트-환경을-관리한다"><span class="n">5.4.1</span>uv가 Python과 프로젝트 환경을 관리한다</h4>
+<p>Python을 가끔 사용하는 현재 범위에서는 pyenv를 추가하지 않는다. uv는 필요한 Python을 찾거나 설치하고 프로젝트 virtual environment와 dependency를 관리한다.</p>
+<p><a href="https://docs.astral.sh/uv/concepts/python-versions/">uv의 Python version 문서</a>와 프로젝트 선언을 기준으로 필요한 Python을 준비한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>uv python list
+uv python install &lt;python-version&gt;</code></pre></div>
+<p><code>&lt;python-version&gt;</code>은 프로젝트의 요구사항을 사용한다. 전역 기본 Python version을 이 문서에서 고정하지 않는다.</p>
+<h4 id="542-프로젝트가-python-version과-dependency를-선언한다"><span class="n">5.4.2</span>프로젝트가 Python version과 dependency를 선언한다</h4>
+<p>기본 구조는 다음과 같다.</p>
+<div class="map"><pre>python-project/
+├── .python-version
+├── pyproject.toml
+├── uv.lock
+└── .venv/</pre></div>
+<p><code>.python-version</code>은 프로젝트 기본 Python version을 선언하고 <code>pyproject.toml</code>의 <code>requires-python</code>은 지원 범위를 선언한다. <code>uv.lock</code>은 version control에 포함하고 uv가 관리하게 한다. <code>.venv</code>는 생성물로 보고 Git에서 제외한다.</p>
+<p>현재 디렉토리에 Python version을 선언할 때는 다음 명령을 사용할 수 있다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>uv python pin &lt;python-version&gt;</code></pre></div>
+<h4 id="543-uv-sync와-uv-run을-사용한다"><span class="n">5.4.3</span><code>uv sync</code>와 <code>uv run</code>을 사용한다</h4>
+<p>프로젝트 environment를 복구한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>uv sync</code></pre></div>
+<p>프로젝트 environment 안에서 명령을 실행한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>uv run python main.py</code></pre></div>
+<p><code>uv run</code>은 프로젝트 metadata와 lockfile을 기준으로 environment를 확인한다. system Python에 <code>pip install</code>을 실행해 프로젝트 dependency를 섞지 않는다.</p></div>
+<div class="sub"><h3 id="55-orbstack과-프로젝트-container"><span class="n">5.5</span>OrbStack과 프로젝트 container</h3><h4 id="551-orbstack을-docker-runtime의-단일-관리-주체로-사용한다"><span class="n">5.5.1</span>OrbStack을 Docker runtime의 단일 관리 주체로 사용한다</h4>
+<p>OrbStack은 <a href="https://orbstack.dev/">공식 사이트</a>에서 제공하는 macOS 애플리케이션으로 설치한다. GUI 애플리케이션의 설치 주체 선택은 <a href="software-installation.html">소프트웨어 설치 원칙</a>을 따른다.</p>
+<p>Docker Desktop을 함께 설치하지 않는다. OrbStack에는 Docker Engine과 <code>docker</code>, <code>docker compose</code>, <code>docker buildx</code> 등의 CLI가 포함되므로 Homebrew로 Docker CLI를 중복 설치하지 않는다. 자세한 동작은 <a href="https://docs.orbstack.dev/docker/">OrbStack Docker 문서</a>에서 확인한다.</p>
+<h4 id="552-docker-context와-cli-출처를-확인한다"><span class="n">5.5.2</span>Docker context와 CLI 출처를 확인한다</h4>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>docker context show
+docker version
+docker compose version
+type -a docker</code></pre></div>
+<p>기대 상태는 다음과 같다.</p>
+<ul><li>Docker context가 <code>orbstack</code>이다.</li><li>Client와 Server version이 모두 출력된다.</li><li>Compose version이 출력된다.</li><li>Docker CLI가 Docker Desktop 또는 Homebrew 설치본과 중복되지 않는다.</li></ul>
+<p>OrbStack은 기존 Docker CLI가 있으면 이를 임의로 교체하지 않을 수 있다. 중복이 확인되면 파일을 직접 삭제하기 전에 기존 관리 주체와 <a href="https://docs.orbstack.dev/install">OrbStack 설치 문서</a>를 확인한다.</p>
+<h4 id="553-프로젝트-전용-service는-해당-저장소가-소유한다"><span class="n">5.5.3</span>프로젝트 전용 service는 해당 저장소가 소유한다</h4>
+<p>MySQL, PostgreSQL, Redis와 Kafka를 macOS에 직접 설치하지 않는다. 특정 프로젝트에 필요한 service는 해당 Git 저장소의 <code>compose.yaml</code>에 선언한다.</p>
+<div class="map"><pre>spring-project/
+├── src/
+├── build.gradle 또는 build.gradle.kts
+├── gradlew
+└── compose.yaml</pre></div>
+<p>공용 <code>~/02-work/04-infra</code> 디렉토리나 Mac 전체에서 공유하는 중앙 Compose 구성을 만들지 않는다.</p>
+<h4 id="554-image-version과-프로젝트-data를-명시적으로-관리한다"><span class="n">5.5.4</span>image version과 프로젝트 data를 명시적으로 관리한다</h4>
+<p><code>latest</code> tag를 기본값으로 사용하지 않고 프로젝트가 검증한 image version을 명시한다.</p>
+<div class="snip"><span class="lang">yaml</span><button class="copy" type="button" aria-label="설정 조각 복사">복사</button><pre><code>services:
+  database:
+    image: postgres:&lt;validated-version&gt;</code></pre></div>
+<p>실제 password, token과 운영 환경 secret을 Compose file에 commit하지 않는다. 필요한 환경 변수의 이름과 비민감 예시는 <code>.env.example</code>처럼 실제 값과 분리한다.</p>
+<p>Named volume이나 bind mount의 data는 source code와 별개다. <code>docker compose down</code>은 일반 종료에 사용할 수 있다. 다만 volume을 삭제하는 option은 data 삭제 목적과 backup 여부를 확인하기 전에는 실행하지 않는다.</p>
+<h4 id="555-프로젝트별로-실행하고-검증한다"><span class="n">5.5.5</span>프로젝트별로 실행하고 검증한다</h4>
+<p>Compose file의 해석 결과를 먼저 확인한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>docker compose config</code></pre></div>
+<p>이어서 service를 시작하고 상태를 확인한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>docker compose up -d
+docker compose ps</code></pre></div>
+<p>일반 종료는 다음 명령을 사용한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>docker compose down</code></pre></div>
+<p>service가 정상인지 판단하는 healthcheck와 애플리케이션 연결 검증은 각 프로젝트가 소유한다.</p></div>
+<div class="sub"><h3 id="56-ide와-terminal-역할"><span class="n">5.6</span>IDE와 terminal 역할</h3><div class="table-scroll"><table><thead><tr><th>도구</th><th>역할</th></tr></thead><tbody><tr><td data-label="도구">IntelliJ IDEA</td><td data-label="역할">Spring Boot와 Java 프로젝트 개발</td></tr><tr><td data-label="도구">VS Code</td><td data-label="역할">React와 Python 프로젝트 개발</td></tr><tr><td data-label="도구">Warp</td><td data-label="역할">독립 interactive terminal</td></tr><tr><td data-label="도구">IDE 내장 terminal</td><td data-label="역할">현재 프로젝트 context의 명령 실행</td></tr></tbody></table></div>
+<p>이 문서는 IDE plugin, keymap, theme, workspace와 프로젝트 setting을 관리하지 않는다. 설치·업데이트·제거는 <a href="software-installation.html">소프트웨어 설치 원칙</a>을 따른다. terminal별 shell 동작은 <a href="shell-configuration.html">Shell 설정 원칙</a>을 따른다.</p></div></section>
+<section class="s-verify" id="6-검증"><h2><span class="n">6</span>검증</h2><div class="sub"><h3 id="61-관리-도구"><span class="n">6.1</span>관리 도구</h3><div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>brew --prefix
+sdk version
+fnm --version
+uv --version
+docker context show</code></pre></div>
+<p>다음을 확인한다.</p>
+<ul class="check"><li>Homebrew prefix는 <code>/opt/homebrew</code>다.</li><li>각 관리 도구가 오류 없이 실행된다.</li></ul>
+<p>관리 도구가 실행되지 않으면 <a href="#5-설정-방법">설정 방법</a>에서 해당 도구의 구성 절차를 따른다.</p></div>
+<div class="sub"><h3 id="62-runtime"><span class="n">6.2</span>runtime</h3><div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>sdk current java
+java --version
+fnm current
+node --version
+uv python list</code></pre></div>
+<p>다음을 확인한다.</p>
+<ul class="check"><li>프로젝트 밖에서는 Java 25와 Node.js 24 계열이 기본이다.</li><li>프로젝트 안에서는 각 version 선언과 실행 결과가 일치한다.</li></ul>
+<p>전역 Java 또는 Node.js version이 다르면 <a href="#522-temurin-25를-기본으로-하고-21을-호환용으로-유지한다">Temurin 기본·호환 version 설정</a>과 <a href="#531-fnm을-nodejs의-단일-관리-주체로-사용한다">fnm의 Node.js 기본 version 설정</a>을 따른다.</p>
+<p>프로젝트 선언과 실행 결과가 다르면 Java는 <a href="#523-프로젝트는-sdkmanrc로-java-version을-선언한다"><code>.sdkmanrc</code> 선언</a>, Node.js는 <a href="#533-프로젝트는-node-version으로-nodejs-version을-선언한다"><code>.node-version</code> 선언</a>, Python은 <a href="#542-프로젝트가-python-version과-dependency를-선언한다">Python version과 dependency 선언</a>을 따른다.</p></div>
+<div class="sub"><h3 id="63-프로젝트-재현"><span class="n">6.3</span>프로젝트 재현</h3><p>Spring Boot 프로젝트:</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>sdk env
+./gradlew build</code></pre></div>
+<p>다음을 확인한다.</p>
+<ul class="check"><li><code>.sdkmanrc</code>가 지정한 Java가 선택된다.</li><li>Gradle Wrapper의 build와 test가 통과한다.</li></ul>
+<p>선택된 Java가 다르면 <a href="#523-프로젝트는-sdkmanrc로-java-version을-선언한다"><code>.sdkmanrc</code> 선언</a>을 따른다.</p>
+<p>React 프로젝트는 <code>.node-version</code> 전환을 확인한 뒤 프로젝트가 선언한 lockfile과 script를 사용한다.</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>node --version</code></pre></div>
+<p>출력된 version이 <code>.node-version</code>의 선언과 일치해야 한다.</p>
+<p>출력된 version이 다르면 <a href="#533-프로젝트는-node-version으로-nodejs-version을-선언한다"><code>.node-version</code> 선언</a>을 따른다.</p>
+<p>Python 프로젝트:</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>uv sync
+uv run python --version</code></pre></div>
+<p>다음을 확인한다.</p>
+<ul class="check"><li>dependency 복구가 완료된다.</li><li>출력된 Python version이 프로젝트 선언과 일치한다.</li></ul>
+<p>출력된 Python version이 다르면 <a href="#542-프로젝트가-python-version과-dependency를-선언한다">Python version과 dependency 선언</a>을 따른다.</p>
+<p>Compose 프로젝트:</p>
+<div class="cmd"><span class="lang">sh</span><button class="copy" type="button" aria-label="명령 복사">복사</button><pre><code>docker compose config
+docker compose up -d
+docker compose ps</code></pre></div>
+<p>다음을 확인한다.</p>
+<ul class="check"><li><code>compose.yaml</code>이 오류 없이 해석된다.</li><li>필요한 service가 정상 상태다.</li></ul>
+<p>검증하려고 시작한 service는 확인 후 프로젝트 절차에 따라 종료한다.</p></div></section>
+<section class="s-maintain" id="7-이후-사용-및-유지보수"><h2><span class="n">7</span>이후 사용 및 유지보수</h2><div class="sub"><h3 id="71-기준-version-변경"><span class="n">7.1</span>기준 version 변경</h3><p>Java 또는 Node.js 기준 major version은 다음 조건을 확인한 뒤 변경한다.</p>
+<ol><li>공식 지원 상태가 LTS인가.</li><li>주력 Spring Boot와 React 프로젝트가 지원하는가.</li><li>IDE와 주요 build plugin이 지원하는가.</li><li>기존 호환 version을 유지해야 하는 프로젝트가 있는가.</li><li>새 version에서 대표 프로젝트의 build와 test가 통과하는가.</li></ol>
+<p>전역 기본 version을 먼저 바꾸고 프로젝트 오류를 나중에 해결하지 않는다. 대표 프로젝트 검증 후 기준 표와 재설치 절차를 함께 갱신한다.</p>
+<p>기준 version을 바꾸면 <a href="reinstallation.html#10-개발환경-구성">재설치 원칙의 개발환경 구성</a>, <a href="reinstallation.html#124-개발-도구">개발 도구 검증</a>, <a href="reinstallation.html#125-대표-프로젝트">대표 프로젝트 검증</a>을 함께 검토한다.</p></div>
+<div class="sub"><h3 id="72-patch-version-업데이트"><span class="n">7.2</span>patch version 업데이트</h3><p>보안과 bug fix를 위해 지원 중인 major 안에서 patch version을 업데이트할 수 있다. 프로젝트가 정확한 patch version을 선언했다면 build와 test 없이 <code>.sdkmanrc</code>, <code>.node-version</code> 또는 lockfile을 변경하지 않는다.</p></div>
+<div class="sub"><h3 id="73-도구-제거"><span class="n">7.3</span>도구 제거</h3><p>더 이상 사용하지 않는 runtime과 manager는 공식 제거 절차를 확인한다. 실행 파일과 shell 초기화 block, cache와 프로젝트 생성물을 구분한다. 프로젝트 source와 lockfile은 기본적으로 보존한다.</p></div></section>
+<section class="s-scope" id="8-현재-범위-밖의-항목"><h2><span class="n">8</span>현재 범위 밖의 항목</h2><details><summary>이 문서가 다루지 않는 것 펼치기</summary><ul class="scope"><li><b>현재 머신의 실제 runtime과 package 설치 목록</b><span>이 문서는 장기 기준만 관리하고 머신의 실측 상태는 관리하지 않는다.</span></li><li><b>Brewfile과 자동 설치 script</b><span>실제 설치 목록과 자동화는 저장소의 현재 범위 밖이다.</span></li><li><b>실제 <code>.zshrc</code>, <code>.zprofile</code>과 SDKMAN 설정 원본</b><span>이 문서는 책임과 배치 기준만 관리하고 실제 dotfiles는 관리하지 않는다.</span></li><li><b>IDE plugin, keymap, theme와 workspace 설정</b><span>IDE의 역할만 정하고 애플리케이션 내부 설정은 다루지 않는다.</span></li><li><b>개별 프로젝트의 dependency와 build script</b><span>각 프로젝트의 선언 파일이 소유한다.</span></li><li><b>운영 환경의 container 배포와 secret 관리</b><span>이 문서는 macOS의 local 개발환경만 다룬다.</span></li><li><b>Kubernetes와 공용 local infra 구성</b><span>현재 역할이 확정되지 않아 기본 구성에 포함하지 않는다.</span></li><li><b>GitHub CLI</b><span>기본 Git과 SSH 구성에 필요하지 않아 포함하지 않는다.</span></li><li><b>pyenv와 Docker Desktop</b><span>Python과 Docker runtime의 관리 주체를 각각 uv와 OrbStack으로 정했으므로 포함하지 않는다.</span></li></ul></details></section>
+<nav class="pager"><a class="pg prev" href="directory-management.html"><span>이전</span>디렉토리 관리 원칙</a><a class="pg next" href="shell-configuration.html"><span>다음</span>Shell 설정 원칙</a></nav>
+<footer>
+  이 페이지는 <code>development-environment.md</code>에서 생성되었다. 직접 수정하지 않는다.<br>
+  내용을 바꿀 때는 마크다운 원본을 고치고 <code>tools/render.py</code>를 다시 실행한다.
+</footer>
+</main>
+</div>
+<script src="assets/page.js"></script>
+</body></html>
